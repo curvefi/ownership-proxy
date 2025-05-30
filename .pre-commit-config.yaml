@@ -1,0 +1,37 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-toml
+      - id: check-yaml
+      - id: check-ast
+      - id: detect-private-key
+
+  - repo: https://github.com/kynan/nbstripout
+    rev: 0.7.1
+    hooks:
+      - id: nbstripout
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.9
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+      - id: ruff-format
+
+  - repo: https://github.com/AlbertoCentonze/natrix
+    rev: v0.1.6  # Use the latest version
+    hooks:
+      - id: natrix
+        args: [contracts/]
+
+  - repo: https://github.com/romanagureev/mamushi
+    rev: feat/pre-commit-hook
+    hooks:
+      - id: mamushi
+        args: [ --line-length 100 ]
+
+default_language_version:
+  python: python3.12
