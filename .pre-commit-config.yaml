@@ -27,11 +27,11 @@ repos:
       - id: natrix
         args: [contracts/]
 
-  - repo: https://github.com/romanagureev/mamushi
-    rev: feat/pre-commit-hook
+  - repo: https://github.com/benber86/mamushi
+    rev: main
     hooks:
       - id: mamushi
-        args: [ --line-length 100 ]
+        args: [ --line-length=100 ]
 
 default_language_version:
   python: python3.12

@@ -6,5 +6,12 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "snekmate>=0.1.1",
-    "titanoboa>=0.2.6",
+    "vyper==0.4.3",
 ]
+
+[tool.uv]
+dev-dependencies = [
+    "pytest-xdist>=3.7.0",
+    "titanoboa==0.2.7",
+]
+
