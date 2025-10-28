@@ -1,3 +1,3 @@
 import boa
 
-ZERO_ADDRESS = boa.eval('empty(address)')
+ZERO_ADDRESS = boa.eval("empty(address)")

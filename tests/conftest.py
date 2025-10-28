@@ -8,12 +8,14 @@ def dummy():
 
 
 @pytest.fixture
-def proxy(dummy):
-    proxy = boa.load("contracts/proxy.vy", dummy.address)
-    # Grant DAO_ROLE to the default EOA for testing
-    DAO_ROLE = proxy.DAO_ROLE()
-    proxy.grantRole(DAO_ROLE, boa.env.eoa)
-    return proxy
+def dao():
+    return boa.env.generate_address("dao")
+
+
+@pytest.fixture
+def proxy(dummy, dao):
+    return boa.load("contracts/proxy.vy", dummy.address, dao)
+
 
 @pytest.fixture
 def proxy_as_dummy(proxy, dummy):
@@ -24,3 +26,30 @@ def proxy_as_dummy(proxy, dummy):
 @pytest.fixture
 def caller():
     return boa.load("tests/mocks/caller.vy")
+
+
+@pytest.fixture
+def deny_all_checker():
+    """A checker contract that denies all calls with a specific reason"""
+    source = """# pragma version 0.4.3
+
+@external
+@payable
+def __default__():
+    raise "Checker denied"
+"""
+    return boa.loads(source)
+
+
+@pytest.fixture
+def accept_all_checker():
+    """A checker contract that accepts all calls"""
+    source = """# pragma version 0.4.3
+
+@external
+@payable
+def __default__():
+    # Accept all calls - do nothing
+    pass
+"""
+    return boa.loads(source)

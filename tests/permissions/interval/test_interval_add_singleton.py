@@ -1,12 +1,12 @@
 import pytest
 import boa
-from hypothesis import given, settings
-from boa.test.strategies import strategy
+from hypothesis import given
+from boa.test import strategies as boa_st
 
 
 @pytest.fixture(scope="module")
-def interval_contract():
-    source_code = """
+def interval():
+    source = """
 # pragma version 0.4.3
 
 from contracts.permissions import interval
@@ -14,94 +14,121 @@ from contracts.permissions import interval
 initializes: interval
 
 @external
-def test_add_singleton(key: bytes32, val: uint256, override: bool = True):
-    interval.add_singleton(key, val, override)
+def add_singleton_interval(key: bytes32, _value: uint256, override: bool = False):
+    interval.add_singleton(key, _value, override)
 
 @external
 @view
-def get_range(key: bytes32) -> (uint256, uint256):
-    return interval.intervals[key].lb, interval.intervals[key].ub
+def check(key: bytes32, _value: uint256):
+    interval.check(key, _value)
+
+exports: interval.__interface__
 """
-    return boa.loads(source_code)
+    return boa.loads(source)
 
 
-def test_add_singleton_interval_basic(interval_contract):
+def test_add_singleton_interval_basic(interval):
     key = b"test_singleton"
     value = 42
 
-    interval_contract.test_add_singleton(key, value)
+    interval.add_singleton_interval(key, value, False)
 
-    lb, ub = interval_contract.get_range(key)
-    assert lb == value
-    assert ub == value
+    # Check that the interval is set correctly
+    interval.check(key, value)
 
+    # Check that only the exact value passes
+    with boa.reverts("value out of interval"):
+        interval.check(key, value - 1)
 
-def test_add_singleton_interval_zero(interval_contract):
-    key = b"test_zero"
-    value = 0
-    
-    interval_contract.test_add_singleton(key, value)
-    
-    lb, ub = interval_contract.get_range(key)
-    assert lb == 0
-    assert ub == 0
+    with boa.reverts("value out of interval"):
+        interval.check(key, value + 1)
 
 
-def test_add_singleton_interval_max_value(interval_contract):
-    key = b"test_max"
-    value = 2**256 - 1
-    
-    interval_contract.test_add_singleton(key, value)
-    
-    lb, ub = interval_contract.get_range(key)
-    assert lb == value
-    assert ub == value
+def test_add_singleton_interval_zero(interval):
+    key = b"test_zero_singleton"
+
+    interval.add_singleton_interval(key, 0, False)
+
+    # Check that only 0 passes
+    interval.check(key, 0)
+
+    with boa.reverts("value out of interval"):
+        interval.check(key, 1)
 
 
-def test_add_singleton_interval_existing_without_override(interval_contract):
-    key = b"test_existing"
-    value1 = 100
-    value2 = 200
-    
-    interval_contract.test_add_singleton(key, value1)
-    
+def test_add_singleton_interval_max_value(interval):
+    key = b"test_max_singleton"
+    max_value = 2**256 - 1
+
+    interval.add_singleton_interval(key, max_value, False)
+
+    # Check that only max value passes
+    interval.check(key, max_value)
+
+    with boa.reverts("value out of interval"):
+        interval.check(key, max_value - 1)
+
+
+def test_add_singleton_interval_existing_without_override(interval):
+    key = b"test_existing_singleton"
+
+    interval.add_singleton_interval(key, 100, False)
+
+    # Try to add another singleton without override
     with boa.reverts("interval already exists"):
-        interval_contract.test_add_singleton(key, value2, False)
+        interval.add_singleton_interval(key, 200, False)
 
 
-def test_add_singleton_interval_existing_with_override(interval_contract):
-    key = b"test_override"
-    value1 = 100
-    value2 = 200
-    
-    interval_contract.test_add_singleton(key, value1)
-    interval_contract.test_add_singleton(key, value2, True)
-    
-    lb, ub = interval_contract.get_range(key)
-    assert lb == value2
-    assert ub == value2
+def test_add_singleton_interval_existing_with_override(interval):
+    key = b"test_override_singleton"
+
+    interval.add_singleton_interval(key, 100, False)
+    interval.check(key, 100)
+
+    # Override with new value
+    interval.add_singleton_interval(key, 200, True)
+
+    # Old value should fail
+    with boa.reverts("value out of interval"):
+        interval.check(key, 100)
+
+    # New value should pass
+    interval.check(key, 200)
 
 
-@given(value=strategy("uint256"))
-@settings(max_examples=20)
-def test_add_singleton_interval_fuzz(interval_contract, value):
-    key = boa.env.generate_address().encode()[:32]
-    
-    interval_contract.test_add_singleton(key, value)
-    
-    lb, ub = interval_contract.get_range(key)
-    assert lb == value
-    assert ub == value
+@given(value=boa_st.strategy("uint256"))
+def test_add_singleton_interval_fuzz(interval, value):
+    key = b"test_fuzz_singleton"
+
+    interval.add_singleton_interval(key, value, True)
+
+    # Exact value should pass
+    interval.check(key, value)
+
+    # Any other value should fail
+    if value > 0:
+        with boa.reverts("value out of interval"):
+            interval.check(key, value - 1)
+
+    if value < 2**256 - 1:
+        with boa.reverts("value out of interval"):
+            interval.check(key, value + 1)
 
 
-def test_add_singleton_interval_multiple_keys(interval_contract):
-    keys = [b"key1", b"key2", b"key3"]
-    values = [10, 20, 30]
-    
-    for key, value in zip(keys, values):
-        interval_contract.test_add_singleton(key, value)
-    
-    for key, expected_value in zip(keys, values):
-        lb, ub = interval_contract.get_range(key)
-        assert lb == expected_value
-        assert ub == expected_value
+def test_add_singleton_interval_multiple_keys(interval):
+    # Test that different keys are isolated
+    key1 = b"singleton1"
+    key2 = b"singleton2"
+
+    interval.add_singleton_interval(key1, 100, False)
+    interval.add_singleton_interval(key2, 200, False)
+
+    # Each key should only accept its own value
+    interval.check(key1, 100)
+    interval.check(key2, 200)
+
+    with boa.reverts("value out of interval"):
+        interval.check(key1, 200)
+
+    with boa.reverts("value out of interval"):
+        interval.check(key2, 100)
