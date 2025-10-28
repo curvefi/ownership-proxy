@@ -18,14 +18,11 @@ exports: (
 
 event DelegationSet:
     delegate: indexed(address)
-    func_sig: indexed(bytes4)
     end_ts: uint256
     checker: indexed(address)
 
 event DelegationKilled:
     delegate: indexed(address)
-    func_sig: indexed(bytes4)
-    killed_by: indexed(address)
 
 struct DelegationMetadata:
     # TODO pack
@@ -39,15 +36,17 @@ EMERGENCY_ADMIN_ROLE: public(constant(bytes32)) = keccak256("EMEREGENCY_ADMIN_RO
 MAX_OUTSIZE: constant(uint256) = 32 * 10000
 MAX_CALLDATA_SIZE: constant(uint256) = 1234
 
-delegations: public(HashMap[bytes4, HashMap[address, DelegationMetadata]])
+delegations: public(HashMap[address, DelegationMetadata])
 target: public(address)
 
 @deploy
-def __init__(target: address):
+def __init__(target: address, dao: address):
     assert target != empty(address), "target==0x0"
 
     access_control.__init__()
-    # TODO ownable._transfer_ownership(owner)
+    access_control._revoke_role(access_control.DEFAULT_ADMIN_ROLE, msg.sender)
+    access_control._grant_role(access_control.DEFAULT_ADMIN_ROLE, dao)
+    access_control._grant_role(DAO_ROLE, dao)
     self.target = target
 
 
@@ -56,7 +55,7 @@ def __init__(target: address):
 @raw_return
 def __default__() -> Bytes[MAX_OUTSIZE]:
     func_sig: bytes4 = convert(slice(msg.data, 0, 4), bytes4)
-    metadata: DelegationMetadata = self.delegations[func_sig][msg.sender]
+    metadata: DelegationMetadata = self.delegations[msg.sender]
 
     is_delegate: bool = metadata.end_ts > block.timestamp
     if is_delegate:
@@ -73,7 +72,6 @@ def __default__() -> Bytes[MAX_OUTSIZE]:
 def set_delegation(
     delegate: address,
     end_ts: uint256,
-    func_sig: bytes4, # TODO Replace with sig pre-image once Vyper adds dynamic allocation 
     checker: address
     ):
 
@@ -81,13 +79,15 @@ def set_delegation(
 
     assert delegate != empty(address), "delegate==0x0"
     assert end_ts > block.timestamp, "end_ts<=block.timestamp"
+    assert checker != empty(address), "checker==0x0"
+    assert checker.codehash != empty(bytes32), "checker has no code"
 
-    self.delegations[func_sig][delegate] = DelegationMetadata(
+    self.delegations[delegate] = DelegationMetadata(
         end_ts=end_ts,
         checker=checker
     )
-    
-    log DelegationSet(delegate=delegate, func_sig=func_sig, end_ts=end_ts, checker=checker)
+
+    log DelegationSet(delegate=delegate, end_ts=end_ts, checker=checker)
 
 @external
 def kill_delegation(func_sig: bytes4, delegate: address):
@@ -103,9 +103,9 @@ def emergency_kill_delegation(func_sig: bytes4, delegate: address):
 
 @internal
 def _kill_delegation(func_sig: bytes4, delegate: address):
-    self.delegations[func_sig][delegate] = DelegationMetadata(
+    self.delegations[delegate] = DelegationMetadata(
         end_ts=0,
         checker=empty(address)
     )
-    
-    log DelegationKilled(delegate=delegate, func_sig=func_sig, killed_by=msg.sender)
+
+    log DelegationKilled(delegate=delegate)
