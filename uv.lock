@@ -373,6 +373,11 @@ toml = [
 ]
 
 [[package]]
+name = "curve-std"
+version = "0.1.0"
+source = { directory = "../curve-std" }
+
+[[package]]
 name = "cytoolz"
 version = "1.0.1"
 source = { registry = "https://pypi.org/simple" }
@@ -945,6 +950,7 @@ name = "ownership-proxy"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
+    { name = "curve-std" },
     { name = "snekmate" },
     { name = "vyper" },
 ]
@@ -957,6 +963,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "curve-std", directory = "../curve-std" },
     { name = "snekmate", specifier = "==0.1.2" },
     { name = "vyper", specifier = "==0.4.3" },
 ]

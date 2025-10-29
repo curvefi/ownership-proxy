@@ -1,6 +1,8 @@
 import pytest
 import boa
 
+from tests.utils.deployers import PASSTHROUGH_CHECKER_DEPLOYER
+
 
 @pytest.fixture
 def dummy():
@@ -28,28 +30,8 @@ def caller():
     return boa.load("tests/mocks/caller.vy")
 
 
-@pytest.fixture
-def deny_all_checker():
-    """A checker contract that denies all calls with a specific reason"""
-    source = """# pragma version 0.4.3
-
-@external
-@payable
-def __default__():
-    raise "Checker denied"
-"""
-    return boa.loads(source)
-
 
 @pytest.fixture
-def accept_all_checker():
-    """A checker contract that accepts all calls"""
-    source = """# pragma version 0.4.3
+def passthrough_checker():
+    return PASSTHROUGH_CHECKER_DEPLOYER.deploy()
 
-@external
-@payable
-def __default__():
-    # Accept all calls - do nothing
-    pass
-"""
-    return boa.loads(source)

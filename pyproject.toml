@@ -5,6 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
+    "curve-std",
     "snekmate==0.1.2",
     "vyper==0.4.3",
 ]
@@ -22,3 +23,7 @@ dev-dependencies = [
     "pytest-xdist>=3.7.0",
     "titanoboa==0.2.7",
 ]
+
+[tool.uv.sources]
+# TODO use remote version and fix version
+curve-std = { path = "../curve-std" }
