@@ -1,15 +1,7 @@
 # pragma version 0.4.3
 
-
-event AddressWhitelisted:
-    key: indexed(bytes32)
-    addr: indexed(address)
-
-
-event AddressRemovedFromWhitelist:
-    key: indexed(bytes32)
-    addr: indexed(address)
-
+# TODO make module friendly
+from contracts.interfaces import IWhitelist
 
 whitelist: HashMap[bytes32, HashMap[address, bool]]
 whitelist_array: HashMap[bytes32, DynArray[address, MAX_WHITELIST_SIZE]]
@@ -26,7 +18,7 @@ def add(key: bytes32, addr: address, override: bool = False):
     # Add the address to the whitelist
     self.whitelist[key][addr] = True
 
-    log AddressWhitelisted(key=key, addr=addr)
+    log IWhitelist.AddressWhitelisted(key=key, addr=addr)
 
 
 @internal
@@ -46,7 +38,7 @@ def remove(key: bytes32, addr: address):
     # Remove the address from the whitelist
     self.whitelist[key][addr] = False
 
-    log AddressRemovedFromWhitelist(key=key, addr=addr)
+    log IWhitelist.AddressRemovedFromWhitelist(key=key, addr=addr)
 
 
 @internal

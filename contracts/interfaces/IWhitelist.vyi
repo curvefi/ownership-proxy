@@ -1,0 +1,8 @@
+event AddressWhitelisted:
+    key: indexed(bytes32)
+    addr: indexed(address)
+
+
+event AddressRemovedFromWhitelist:
+    key: indexed(bytes32)
+    addr: indexed(address)

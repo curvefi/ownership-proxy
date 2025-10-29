@@ -1,0 +1,15 @@
+event CooldownSet:
+    key: indexed(bytes32)
+    start: uint256
+    duration: uint256
+
+
+event CooldownReset:
+    key: indexed(bytes32)
+    new_start: uint256
+
+
+struct Cooldown:
+    # vyper does not yet have packing, just being forward looking here
+    start: uint128
+    duration: uint128

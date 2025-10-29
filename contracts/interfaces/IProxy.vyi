@@ -1,0 +1,12 @@
+event DelegationSet:
+    delegate: indexed(address)
+    end_ts: uint256
+    checker: indexed(address)
+
+event DelegationKilled:
+    delegate: indexed(address)
+
+struct DelegationMetadata:
+    # TODO pack
+    end_ts: uint256
+    checker: address

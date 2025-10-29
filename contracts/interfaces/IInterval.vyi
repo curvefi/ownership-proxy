@@ -1,0 +1,9 @@
+event IntervalSet:
+    key: indexed(bytes32)
+    lb: uint256
+    ub: uint256
+
+
+struct Interval:
+    lb: uint256
+    ub: uint256
