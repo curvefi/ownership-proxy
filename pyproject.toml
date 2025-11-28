@@ -25,5 +25,4 @@ dev-dependencies = [
 ]
 
 [tool.uv.sources]
-# TODO use remote version and fix version
-curve-std = { path = "../curve-std" }
+curve-std = { git = "https://github.com/curvefi/curve-std", rev = "6db238291a62eee43446a0f86323f071e5a001eb" }
