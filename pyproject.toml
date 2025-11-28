@@ -1,7 +1,7 @@
 [project]
 name = "ownership-proxy"
 version = "0.1.0"
-description = "Add your description here"
+description = "Access control extension proxy"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
