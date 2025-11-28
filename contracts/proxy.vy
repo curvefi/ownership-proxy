@@ -26,7 +26,7 @@ InvalidDelegationDuration: constant(Bytes[4]) = method_id("InvalidDelegationDura
 InvalidChecker: constant(Bytes[4]) = method_id("InvalidChecker()")
 
 DAO_ROLE: public(constant(bytes32)) = keccak256("DAO_ROLE")
-EMERGENCY_ADMIN_ROLE: public(constant(bytes32)) = keccak256("EMEREGENCY_ADMIN_ROLE")
+EMERGENCY_ADMIN_ROLE: public(constant(bytes32)) = keccak256("EMERGENCY_ADMIN_ROLE")
 
 
 # TODO figure our right size 
