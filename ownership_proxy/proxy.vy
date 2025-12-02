@@ -24,16 +24,15 @@ ZeroAddress: constant(Bytes[4]) = method_id("ZeroAddress()")
 InvalidDelegationDuration: constant(Bytes[4]) = method_id("InvalidDelegationDuration()")
 InvalidChecker: constant(Bytes[4]) = method_id("InvalidChecker()")
 
-DAO_ROLE: public(constant(bytes32)) = keccak256("DAO_ROLE")
-EMERGENCY_ADMIN_ROLE: public(constant(bytes32)) = keccak256("EMERGENCY_ADMIN_ROLE")
-
+DAO_ROLE: constant(bytes32) = keccak256("DAO_ROLE")
+EMERGENCY_ADMIN_ROLE: constant(bytes32) = keccak256("EMERGENCY_ADMIN_ROLE")
 
 # TODO figure our right size 
 MAX_OUTSIZE: constant(uint256) = 32 * 10000
 MAX_CALLDATA_SIZE: constant(uint256) = 1234
 
-delegations: public(HashMap[address, IProxy.DelegationMetadata])
-target: public(address)
+delegations: HashMap[address, IProxy.DelegationMetadata]
+target: address
 
 @deploy
 def __init__(target: address, dao: address):
@@ -65,7 +64,7 @@ def __default__() -> Bytes[MAX_OUTSIZE]:
 
 
 @external
-def set_delegation(
+def proxy__set_delegation(
     _delegate: address,
     _metadata: IProxy.DelegationMetadata,
     ):
@@ -84,20 +83,44 @@ def set_delegation(
         checker=_metadata.checker
     )
 
-@external
-def kill_delegation(func_sig: bytes4, delegate: address):
-    access_control._check_role(DAO_ROLE, msg.sender)
-    self._kill_delegation(func_sig, delegate)
-
-
-@external
-def emergency_kill_delegation(func_sig: bytes4, delegate: address):
-    access_control._check_role(EMERGENCY_ADMIN_ROLE, msg.sender)
-    self._kill_delegation(func_sig, delegate)
-
-
 @internal
 def _kill_delegation(func_sig: bytes4, delegate: address):
     self.delegations[delegate] = empty(IProxy.DelegationMetadata)
 
     log IProxy.DelegationKilled(delegate=delegate)
+
+@external
+def proxy__kill_delegation(func_sig: bytes4, delegate: address):
+    access_control._check_role(DAO_ROLE, msg.sender)
+    self._kill_delegation(func_sig, delegate)
+
+
+# TODO underscore args
+@external
+def proxy__emergency_kill_delegation(func_sig: bytes4, delegate: address):
+    access_control._check_role(EMERGENCY_ADMIN_ROLE, msg.sender)
+    self._kill_delegation(func_sig, delegate)
+
+
+@external
+@view
+def proxy__delegations(_delegate: address) -> IProxy.DelegationMetadata:
+    return self.delegations[_delegate]
+
+
+@external
+@view
+def proxy__target() -> address:
+    return self.target
+
+
+@external
+@pure
+def proxy__DAO_ROLE() -> bytes32:
+    return DAO_ROLE
+
+
+@external
+@pure
+def proxy__EMERGENCY_ADMIN_ROLE() -> bytes32:
+    return EMERGENCY_ADMIN_ROLE
