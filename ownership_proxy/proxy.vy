@@ -26,7 +26,7 @@ MAX_OUTSIZE: constant(uint256) = 32 * 10000
 MAX_CALLDATA_SIZE: constant(uint256) = 1234
 
 delegations: HashMap[address, IProxy.DelegationMetadata]
-target: address
+TARGET: immutable(address)
 
 
 @deploy
@@ -38,7 +38,7 @@ def __init__(_target: address, _dao: address):
     access_control._revoke_role(access_control.DEFAULT_ADMIN_ROLE, msg.sender)
     access_control._grant_role(access_control.DEFAULT_ADMIN_ROLE, _dao)
     access_control._grant_role(DAO_ROLE, _dao)
-    self.target = _target
+    TARGET = _target
 
 
 @external
@@ -54,7 +54,7 @@ def __default__() -> Bytes[MAX_OUTSIZE]:
         access_control._check_role(DAO_ROLE, msg.sender)
 
     result: Bytes[MAX_OUTSIZE] = b""
-    result = raw_call(self.target, msg.data, value=msg.value, max_outsize=MAX_OUTSIZE)
+    result = raw_call(TARGET, msg.data, value=msg.value, max_outsize=MAX_OUTSIZE)
     return result
 
 
@@ -108,7 +108,7 @@ def proxy__delegations(_delegate: address) -> IProxy.DelegationMetadata:
 @external
 @view
 def proxy__target() -> address:
-    return self.target
+    return TARGET
 
 
 @external
