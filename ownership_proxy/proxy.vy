@@ -18,12 +18,6 @@ from ownership_proxy.interfaces import IProxy
 
 implements: IProxy
 
-from curve_std import error as e
-
-ZeroAddress: constant(Bytes[4]) = method_id("ZeroAddress()")
-InvalidDelegationDuration: constant(Bytes[4]) = method_id("InvalidDelegationDuration()")
-InvalidChecker: constant(Bytes[4]) = method_id("InvalidChecker()")
-
 DAO_ROLE: constant(bytes32) = keccak256("DAO_ROLE")
 EMERGENCY_ADMIN_ROLE: constant(bytes32) = keccak256("EMERGENCY_ADMIN_ROLE")
 
@@ -37,8 +31,8 @@ target: address
 
 @deploy
 def __init__(_target: address, _dao: address):
-    e.require(_target != empty(address), ZeroAddress)
-    e.require(_dao != empty(address), ZeroAddress)
+    assert _target != empty(address), "empty target"
+    assert _dao != empty(address), "empty dao"
 
     access_control.__init__()
     access_control._revoke_role(access_control.DEFAULT_ADMIN_ROLE, msg.sender)
@@ -71,10 +65,10 @@ def proxy__set_delegation(
     ):
     access_control._check_role(DAO_ROLE, msg.sender)
 
-    e.require(_delegate != empty(address), ZeroAddress)
-    e.require(_metadata.checker != empty(address), ZeroAddress)
-    e.require(_metadata.end_ts > block.timestamp, InvalidDelegationDuration)
-    e.require(_metadata.checker.codehash != empty(bytes32), InvalidChecker)
+    assert _delegate != empty(address), "empty delegate"
+    assert _metadata.checker != empty(address), "empty checker"
+    assert _metadata.end_ts > block.timestamp, "invalid delegation duration"
+    assert _metadata.checker.codehash != empty(bytes32), "invalid checker"
 
     self.delegations[_delegate] = _metadata
 
