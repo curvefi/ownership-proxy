@@ -7,6 +7,5 @@ event DelegationKilled:
     delegate: indexed(address)
 
 struct DelegationMetadata:
-    # TODO pack
     end_ts: uint256
     checker: address

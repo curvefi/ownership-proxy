@@ -34,16 +34,17 @@ MAX_CALLDATA_SIZE: constant(uint256) = 1234
 delegations: HashMap[address, IProxy.DelegationMetadata]
 target: address
 
+
 @deploy
-def __init__(target: address, dao: address):
-    e.require(target != empty(address), ZeroAddress)
-    e.require(dao != empty(address), ZeroAddress)
+def __init__(_target: address, _dao: address):
+    e.require(_target != empty(address), ZeroAddress)
+    e.require(_dao != empty(address), ZeroAddress)
 
     access_control.__init__()
     access_control._revoke_role(access_control.DEFAULT_ADMIN_ROLE, msg.sender)
-    access_control._grant_role(access_control.DEFAULT_ADMIN_ROLE, dao)
-    access_control._grant_role(DAO_ROLE, dao)
-    self.target = target
+    access_control._grant_role(access_control.DEFAULT_ADMIN_ROLE, _dao)
+    access_control._grant_role(DAO_ROLE, _dao)
+    self.target = _target
 
 
 @external
@@ -83,23 +84,25 @@ def proxy__set_delegation(
         checker=_metadata.checker
     )
 
-@internal
-def _kill_delegation(func_sig: bytes4, delegate: address):
-    self.delegations[delegate] = empty(IProxy.DelegationMetadata)
 
-    log IProxy.DelegationKilled(delegate=delegate)
+@internal
+def _kill_delegation(_func_sig: bytes4, _delegate: address):
+    self.delegations[_delegate] = empty(IProxy.DelegationMetadata)
+
+    log IProxy.DelegationKilled(delegate=_delegate)
+
 
 @external
-def proxy__kill_delegation(func_sig: bytes4, delegate: address):
+def proxy__kill_delegation(_func_sig: bytes4, _delegate: address):
     access_control._check_role(DAO_ROLE, msg.sender)
-    self._kill_delegation(func_sig, delegate)
+    self._kill_delegation(_func_sig, _delegate)
 
 
 # TODO underscore args
 @external
-def proxy__emergency_kill_delegation(func_sig: bytes4, delegate: address):
+def proxy__emergency_kill_delegation(_func_sig: bytes4, _delegate: address):
     access_control._check_role(EMERGENCY_ADMIN_ROLE, msg.sender)
-    self._kill_delegation(func_sig, delegate)
+    self._kill_delegation(_func_sig, _delegate)
 
 
 @external
