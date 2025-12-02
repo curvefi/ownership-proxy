@@ -17,8 +17,8 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = ["ownership_proxy"]
 
-[tool.uv]
-dev-dependencies = [
+[dependency-groups]
+dev = [
     "pytest-xdist>=3.7.0",
     "titanoboa==0.2.7",
 ]
