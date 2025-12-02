@@ -20,12 +20,12 @@ def proxy__set_delegation(
 
 
 @external
-def proxy__kill_delegation(_func_sig: bytes4, _delegate: address):
+def proxy__kill_delegation(_delegate: address):
     ...
 
 
 @external
-def proxy__emergency_kill_delegation(_func_sig: bytes4, _delegate: address):
+def proxy__emergency_kill_delegation(_delegate: address):
     ...
 
 

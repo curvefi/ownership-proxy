@@ -23,7 +23,6 @@ EMERGENCY_ADMIN_ROLE: constant(bytes32) = keccak256("EMERGENCY_ADMIN_ROLE")
 
 # TODO figure our right size 
 MAX_OUTSIZE: constant(uint256) = 32 * 10000
-MAX_CALLDATA_SIZE: constant(uint256) = 1234
 
 delegations: HashMap[address, IProxy.DelegationMetadata]
 TARGET: immutable(address)
@@ -80,23 +79,23 @@ def proxy__set_delegation(
 
 
 @internal
-def _kill_delegation(_func_sig: bytes4, _delegate: address):
+def _kill_delegation(_delegate: address):
     self.delegations[_delegate] = empty(IProxy.DelegationMetadata)
 
     log IProxy.DelegationKilled(delegate=_delegate)
 
 
 @external
-def proxy__kill_delegation(_func_sig: bytes4, _delegate: address):
+def proxy__kill_delegation(_delegate: address):
     access_control._check_role(DAO_ROLE, msg.sender)
-    self._kill_delegation(_func_sig, _delegate)
+    self._kill_delegation(_delegate)
 
 
 # TODO underscore args
 @external
-def proxy__emergency_kill_delegation(_func_sig: bytes4, _delegate: address):
+def proxy__emergency_kill_delegation(_delegate: address):
     access_control._check_role(EMERGENCY_ADMIN_ROLE, msg.sender)
-    self._kill_delegation(_func_sig, _delegate)
+    self._kill_delegation(_delegate)
 
 
 @external
