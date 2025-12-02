@@ -9,3 +9,45 @@ event DelegationKilled:
 struct DelegationMetadata:
     end_ts: uint256
     checker: address
+
+
+@external
+def proxy__set_delegation(
+    _delegate: address,
+    _metadata: DelegationMetadata,
+    ):
+    ...
+
+
+@external
+def proxy__kill_delegation(_func_sig: bytes4, _delegate: address):
+    ...
+
+
+@external
+def proxy__emergency_kill_delegation(_func_sig: bytes4, _delegate: address):
+    ...
+
+
+@external
+@view
+def proxy__delegations(_delegate: address) -> DelegationMetadata: 
+    ...
+
+
+@external
+@view
+def proxy__target() -> address:
+    ...
+
+
+@external
+@pure
+def proxy__DAO_ROLE() -> bytes32:
+    ...
+
+
+@external
+@pure
+def proxy__EMERGENCY_ADMIN_ROLE() -> bytes32:
+    ...
