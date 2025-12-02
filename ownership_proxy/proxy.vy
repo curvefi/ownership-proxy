@@ -14,8 +14,7 @@ exports: (
     access_control.supportsInterface
 )
 
-# TODO make module friendly
-from contracts.interfaces import IProxy
+from ownership_proxy.interfaces import IProxy
 
 implements: IProxy
 
